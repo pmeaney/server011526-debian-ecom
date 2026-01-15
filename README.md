@@ -14,7 +14,7 @@ I used ClaudeAI (via browser) to take that project's code (tf, yml), notes & doc
 
 ## Security Notes
 
-This repository contains infrastructure-as-code for a small business e-commerce marketplace server. All sensitive information (tokens, keys, passwords, IP addresses) is managed via 1Password and environment variables - nothing sensitive is committed to this repository.
+This repository contains infrastructure-as-code for a linux server hosting a small business e-commerce marketplace. All sensitive information (tokens, keys, passwords, IP addresses) is managed via 1Password and environment variables - nothing sensitive is committed to this repository.
 
 The server implements defense-in-depth: DigitalOcean cloud firewall restricts traffic to ports 80/443/22, UFW provides host-level firewall rules, fail2ban automatically blocks IPs after 3 failed SSH attempts, and SSH is configured for key-only authentication with password login disabled. Detailed security implementation is documented in `docs/server-security-hardening-guide.md`.
 
