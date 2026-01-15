@@ -1,0 +1,32 @@
+# Terraform
+.terraform/
+.terraform.lock.hcl
+terraform.tfstate
+terraform.tfstate.backup
+*.tfvars
+*.auto.tfvars
+
+# Environment variables
+.env
+.env.local
+*.env
+
+# 1Password
+.op/
+
+# SSH keys (shouldn't be here anyway)
+*.pem
+*.key
+id_rsa*
+id_ed25519*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Backups
+*.backup
+*~
