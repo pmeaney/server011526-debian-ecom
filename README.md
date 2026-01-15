@@ -10,13 +10,11 @@ It has evolved from my past TF project "server020325-debianNpm".
 I used ClaudeAI (via browser) to take that project's code (tf, yml), notes & documentation and organize it into a fresh, clear, concise set of documentation.  
 (That project became a bit cluttered and disorganized as I iterated on it.  One problem I faced which threw me for a loop was... I had worked on it from publc libraries-- which blocked ssh access.  It took me some time to realize that, and it distracted me a bit. I was also improving my shell automation knowledge & skills while iterating on the project's setup automation steps.  As a result, I didn't put as much focus into keeping my notes clean.)  ClaudeAI proved quite useful for organizing and clarifying my own human-written documentation.
 
-**Project analysis and improvement suggestions**
-
-I also use ClaudeAI to analyze my project and recommend improvements. In the process, Claude introduces me to new knowledge to learn.
+**Project analysis and improvement suggestions:** I also use ClaudeAI to analyze my project and recommend improvements. In the process, Claude introduces me to new knowledge to learn.  
 
 ## Security Notes
 
-This repository contains infrastructure-as-code for my personal guitar marketplace server. All sensitive information (tokens, keys, passwords, IP addresses) is managed via 1Password and environment variables - nothing sensitive is committed to this repository.
+This repository contains infrastructure-as-code for a small business e-commerce marketplace server. All sensitive information (tokens, keys, passwords, IP addresses) is managed via 1Password and environment variables - nothing sensitive is committed to this repository.
 
 The server implements defense-in-depth: DigitalOcean cloud firewall restricts traffic to ports 80/443/22, UFW provides host-level firewall rules, fail2ban automatically blocks IPs after 3 failed SSH attempts, and SSH is configured for key-only authentication with password login disabled. Detailed security implementation is documented in `docs/server-security-hardening-guide.md`.
 
