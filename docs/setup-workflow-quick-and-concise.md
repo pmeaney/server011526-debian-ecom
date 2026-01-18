@@ -166,9 +166,17 @@ op item get "${ITEM_1P}" --vault "${VAULT_1P}" --fields label=${SSH_KEY_NAME_CIC
 ## Step 5: Export Environment Variables for Terraform
 
 Here, we're just setting items into the OS env, for subsequent use with Terraform.  Most of them use "TF_VAR_" as a prefix-- which is require for terraform to pick these up and use them in its code files.
+
+**Note:** These must be pasted into the same terminal session where the posted the previous command-- otherwise the terminal won't find them.
+
+**Note:** This first thing (ITEM_1P) should already be set, from the earliest step in this file ("Configuration Variables").  But just in case, feel free to re-run it here.  Just ensure it matches the earlier version
 ```bash
+
+# Set the item name first
+ITEM_1P="server011526-debian-ecom"
+
 # Export DigitalOcean token
-export DIGITALOCEAN_ACCESS_TOKEN=$(op item get ${ITEM_1P} --fields label=${FIELD_1P_DO_TOKEN})
+export DIGITALOCEAN_ACCESS_TOKEN=$(op item get ${ITEM_1P} --fields label=${FIELD_1P_DO_TOKEN} --reveal)
 
 # Export Terraform variables
 export TF_VAR_LINUX_SERVER_NAME=$(op item get ${ITEM_1P} --fields label=LINUX_SERVER_NAME)

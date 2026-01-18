@@ -797,7 +797,7 @@ ssh -i ~/.ssh/${SSH_KEY_NAME_HUMAN} patDevOpsUser@${SERVER_IP}
 ```bash
 # Re-export all variables (run Phase 4 commands again)
 ITEM_1P="server011526-debian-ecom"
-export DIGITALOCEAN_ACCESS_TOKEN=$(op item get ${ITEM_1P} --fields label=DOToken_FA_011526)
+export DIGITALOCEAN_ACCESS_TOKEN=$(op item get ${ITEM_1P} --fields label=DOToken_FA_011526 --reveal)
 # ... etc (all the export commands from Phase 4)
 ```
 
