@@ -226,6 +226,9 @@ terraform output
 
 ## Step 8: Update SSH Config with Real IP
 
+Originally, we setup the developer's desktop with a ~/.ssh/config file which includes a placeholder IP.
+Now that the server is created, we'll need to update that with the server's actual IP, so we can ssh into it.
+
 ```bash
 # Get IP from 1Password
 export SERVER_IP=$(op item get ${ITEM_1P} --fields label=LINUX_SERVER_IPADDRESS)
