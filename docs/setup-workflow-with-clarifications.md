@@ -1,6 +1,8 @@
 # Setup Workflow - server011526-debian-ecom
 
 This guide walks through the complete server setup process from scratch.
+It provides tons of clarifying comments to help you understand what each step does.
+If you're already familiar with the various aspects of this project, you may instead want to just go run with the `setup-workflow-quick-and-concise.md` file.  It contains the same things, but is much more concise-- without as much explanatory commentary. 
 
 ## Prerequisites
 
@@ -15,7 +17,7 @@ Before starting, ensure you have these tools installed:
 
 ## Phase 0: 1Password Setup for the Project
 
-**What this does:** Creates the organizational structure in 1Password where all your secrets and configuration will be stored. Think of this as setting up a filing cabinet before adding documents.
+**What this does:** Creates the organizational structure in 1Password where all your secrets and configuration will be stored. This can be done via the 1Password app or CLI.
 
 ### 0.1 Create a Vault (if you don't have one)
 
@@ -27,24 +29,59 @@ Before starting, ensure you have these tools installed:
 
 ### 0.2 Create a Secure Note Item
 
+**Option A: Via 1Password CLI (Recommended)**
+
+```bash
+# Set your configuration variables first
+export VAULT_1P=Z_Tech_ClicksAndCodes
+export ITEM_1P="server011526-debian-ecom"
+export LINUX_HUMAN_USERNAME=patDevOpsUser
+export LINUX_BOTCICDGHA_USERNAME=ghaCICDBotUser
+export LINUX_SERVER_NAME=server011526-debian-ecom
+export FIELD_1P_DO_TOKEN=DOToken_FA_011526
+export FIELD_1P_GH_TOKEN=GHPATCICD_RpoWkflo_WRDpckgs_011526
+
+# Create the item with placeholder tokens
+# Note: Quotes around each field are required for zsh to prevent glob expansion
+op item create --category "Secure Note" \
+  --title "$ITEM_1P" \
+  --vault "$VAULT_1P" \
+  "${FIELD_1P_DO_TOKEN}[password]=DO_TOKEN_PLACEHOLDER" \
+  "${FIELD_1P_GH_TOKEN}[password]=GH_TOKEN_PLACEHOLDER" \
+  "LINUX_HUMAN_USERNAME[text]=${LINUX_HUMAN_USERNAME}" \
+  "LINUX_BOTCICDGHA_USERNAME[text]=${LINUX_BOTCICDGHA_USERNAME}" \
+  "LINUX_SERVER_NAME[text]=${LINUX_SERVER_NAME}" \
+  "VAULT_1P[text]=${VAULT_1P}" \
+  "LINUX_SERVER_IPADDRESS[text]="
+```
+
+After creating the item, you'll replace the placeholder values with real tokens in Phase 1.
+
+**Option B: Via 1Password Desktop App (Manual)**
+
 1. In your vault, create a new **Secure Note** item
 2. Title it: `server011526-debian-ecom`
-3. This item will hold all configuration values for this specific project
+3. Add these fields manually:
+   - `DOToken_FA_011526` (password field) - leave empty for now
+   - `GHPATCICD_RpoWkflo_WRDpckgs_011526` (password field) - leave empty for now
+   - `LINUX_HUMAN_USERNAME` (text) - value: `patDevOpsUser`
+   - `LINUX_BOTCICDGHA_USERNAME` (text) - value: `ghaCICDBotUser`
+   - `LINUX_SERVER_NAME` (text) - value: `server011526-debian-ecom`
+   - `VAULT_1P` (text) - value: `Z_Tech_ClicksAndCodes`
+   - `LINUX_SERVER_IPADDRESS` (text) - leave empty
 
 **Note:** This single item will eventually contain:
-- API tokens (DigitalOcean, GitHub)
-- SSH public keys
+- API tokens (DigitalOcean, GitHub) - added in Phase 1
+- SSH public keys - added automatically in Phase 2
 - Linux usernames
 - Server name
-- Server IP address (added automatically by Terraform later)
+- Server IP address - added automatically by Terraform later
 
 ---
 
 ## Phase 1: Manual Token Creation
 
-**What this does:** Creates API tokens that give command-line tools permission to access DigitalOcean and GitHub on your behalf. These must be created manually through web interfaces (they can't be generated via CLI for security reasons).
-
-These tokens cannot be created via CLI - must be done manually through web interfaces.
+**What this does:** Creates API tokens that give command-line tools permission to access DigitalOcean and GitHub on your behalf. These must be created manually through web interfaces (they can't be generated via CLI for security reasons). After creating them, you'll add them to the 1Password item created in Phase 0.
 
 ### 1.1 Create DigitalOcean Token
 
@@ -57,10 +94,10 @@ These tokens cannot be created via CLI - must be done manually through web inter
    - Scopes: **Full Access** (read + write)
    - Expiration: Choose appropriate timeframe
 4. **Copy the token immediately** - you won't see it again
-5. Store in 1Password:
+5. Add to 1Password:
    - Open your `server011526-debian-ecom` item in 1Password
-   - Add field: Type = `Password`, Label = `DOToken_FA_011526`
-   - Paste token value
+   - Find the field `DOToken_FA_011526` (password field)
+   - Replace `DO_TOKEN_PLACEHOLDER` with the actual token value
 
 **Important:** The token is only shown once. If you lose it, you'll need to create a new one.
 
@@ -82,10 +119,10 @@ These tokens cannot be created via CLI - must be done manually through web inter
      - ✅ `read:org` (Read org and team membership)
      - ✅ `admin:public_key` (Full control of user public keys)
 4. **Copy the token immediately** - you won't see it again
-5. Store in 1Password:
+5. Add to 1Password:
    - Open your `server011526-debian-ecom` item
-   - Add field: Type = `Password`, Label = `GHPATCICD_RpoWkflo_WRDpckgs_011526`
-   - Paste token value
+   - Find the field `GHPATCICD_RpoWkflo_WRDpckgs_011526` (password field)
+   - Replace `GH_TOKEN_PLACEHOLDER` with the actual token value
 
 **Note:** The `admin:public_key` scope is what allows the CLI to automatically upload SSH keys to your GitHub account in the next phase.
 
@@ -192,7 +229,9 @@ You should see the public key content (starts with `ssh-ed25519`).
 
 ```bash
 # Authenticate with GitHub using your PAT token
-echo "$(op item get "${ITEM_1P}" --vault "${VAULT_1P}" --field "${FIELD_1P_GH_TOKEN}")" | gh auth login --with-token
+# Note: --reveal flag is required because the token is stored as a password field in 1Password
+# Without --reveal, the command returns "[use 'op item get...' --reveal to reveal]" instead of the actual token
+echo "$(op item get "${ITEM_1P}" --vault "${VAULT_1P}" --field "${FIELD_1P_GH_TOKEN}" --reveal)" | gh auth login --with-token
 
 # Upload SSH key to GitHub
 gh ssh-key add ~/.ssh/${SSH_KEY_NAME_HUMAN}.pub -t "${SSH_KEY_NAME_HUMAN}"
@@ -207,6 +246,8 @@ gh ssh-key add ~/.ssh/${SSH_KEY_NAME_HUMAN}.pub -t "${SSH_KEY_NAME_HUMAN}"
 gh ssh-key list
 ```
 
+**Note:** You may see a warning about "admin:ssh_signing_key" scope - this is harmless. It's about SSH commit signing keys (for proving you authored commits), not authentication keys. Your authentication keys are working fine.
+
 You should see your key listed with the title `id_ed25519_011526_humanuser`.
 
 ### 2.7 Upload Human Key to DigitalOcean
@@ -215,7 +256,8 @@ You should see your key listed with the title `id_ed25519_011526_humanuser`.
 
 ```bash
 # Authenticate with DigitalOcean using your token
-doctl auth init --context default --access-token "$(op item get "${ITEM_1P}" --vault "${VAULT_1P}" --field "${FIELD_1P_DO_TOKEN}")"
+# Note: --reveal flag is required because the token is stored as a password field in 1Password
+doctl auth init --context default --access-token "$(op item get "${ITEM_1P}" --vault "${VAULT_1P}" --field "${FIELD_1P_DO_TOKEN}" --reveal)"
 
 # Upload SSH key to DigitalOcean
 doctl compute ssh-key create "${SSH_KEY_NAME_HUMAN}" \
@@ -363,16 +405,18 @@ In 1Password, open your `server011526-debian-ecom` item and add these fields:
 
 **Important:** These variables only exist in your current terminal session. If you close the terminal, you'll need to export them again.
 
+**Note about --reveal flag:** The DigitalOcean and GitHub tokens are stored as password fields in 1Password. When retrieving password fields via CLI, you must use the `--reveal` flag, otherwise `op` returns a placeholder message instead of the actual value.
+
 Terraform reads configuration from environment variables. Export them from 1Password:
 
 ```bash
 # Set item name
 ITEM_1P="server011526-debian-ecom"
 
-# Export DigitalOcean token (required by DO provider)
-export DIGITALOCEAN_ACCESS_TOKEN=$(op item get ${ITEM_1P} --fields label=DOToken_FA_011526)
+# Export DigitalOcean token (requires --reveal since it's a password field)
+export DIGITALOCEAN_ACCESS_TOKEN=$(op item get ${ITEM_1P} --fields label=DOToken_FA_011526 --reveal)
 
-# Export Terraform variables (TF_VAR_ prefix required)
+# Export Terraform variables
 export TF_VAR_LINUX_SERVER_NAME=$(op item get ${ITEM_1P} --fields label=LINUX_SERVER_NAME)
 export TF_VAR_LINUX_HUMAN_USERNAME=$(op item get ${ITEM_1P} --fields label=LINUX_HUMAN_USERNAME)
 export TF_VAR_LINUX_HUMAN_SSHKEY=$(op item get ${ITEM_1P} --fields label=id_ed25519_011526_humanuser)
