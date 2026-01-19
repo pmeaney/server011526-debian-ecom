@@ -1,12 +1,12 @@
 # tf with env vars fed from OS CLI
 
 terraform {
-  required_version = ">= 1.0.0"
-
+  required_version = ">= 1.5.0, < 2.0.0"
+  
   required_providers {
     digitalocean = {
       source  = "digitalocean/digitalocean"
-      version = "~> 2.0"
+      version = "~> 2.73"
     }
   }
 }
@@ -119,7 +119,7 @@ resource "digitalocean_droplet" "droplet" {
   image     = "debian-12-x64"
   name      = "${var.LINUX_SERVER_NAME}"
   region    = local.regions.san_francisco
-  size      = local.sizes.nano-plus
+  size      = local.sizes.small
   tags      = ["${var.SERVER_TAG_DEPLOY_COLOR}", "${var.SERVER_TAG_DATESTRING}"]
   user_data = data.template_file.my_example_user_data.rendered
 }
@@ -181,5 +181,84 @@ resource "null_resource" "store_ip_1password" {
   # This ensures the script runs every time the IP changes
   triggers = {
     ip_address = digitalocean_droplet.droplet.ipv4_address
+  }
+}
+
+
+# added jan 2026
+resource "digitalocean_firewall" "my_droplet_firewall_allow_web_ssh" {
+  name = "vendure-ecommerce-firewall"
+
+  droplet_ids = [digitalocean_droplet.droplet.id]
+
+  # Inbound: Public web traffic
+  inbound_rule {
+    protocol         = "tcp"
+    port_range       = "80"
+    source_addresses = ["0.0.0.0/0", "::/0"]
+  }
+
+  inbound_rule {
+    protocol         = "tcp"
+    port_range       = "443"
+    source_addresses = ["0.0.0.0/0", "::/0"]
+  }
+
+  # Inbound: SSH from anywhere (mobile workflow)
+  inbound_rule {
+    protocol         = "tcp"
+    port_range       = "22"
+    source_addresses = ["0.0.0.0/0", "::/0"]
+  }
+
+  # Inbound: ICMP (optional - for monitoring/debugging)
+  inbound_rule {
+    protocol         = "icmp"
+    source_addresses = ["0.0.0.0/0", "::/0"]
+  }
+
+  # Outbound: DNS (required)
+  outbound_rule {
+    protocol              = "tcp"
+    port_range            = "53"
+    destination_addresses = ["0.0.0.0/0", "::/0"]
+  }
+
+  outbound_rule {
+    protocol              = "udp"
+    port_range            = "53"
+    destination_addresses = ["0.0.0.0/0", "::/0"]
+  }
+
+  # Outbound: HTTP/HTTPS (required for updates, Docker, APIs)
+  outbound_rule {
+    protocol              = "tcp"
+    port_range            = "80"
+    destination_addresses = ["0.0.0.0/0", "::/0"]
+  }
+
+  outbound_rule {
+    protocol              = "tcp"
+    port_range            = "443"
+    destination_addresses = ["0.0.0.0/0", "::/0"]
+  }
+
+  # Outbound: SMTP (required for sending emails)
+  outbound_rule {
+    protocol              = "tcp"
+    port_range            = "587"
+    destination_addresses = ["0.0.0.0/0", "::/0"]
+  }
+
+  outbound_rule {
+    protocol              = "tcp"
+    port_range            = "25"
+    destination_addresses = ["0.0.0.0/0", "::/0"]
+  }
+
+  # Outbound: ICMP (optional - for debugging)
+  outbound_rule {
+    protocol              = "icmp"
+    destination_addresses = ["0.0.0.0/0", "::/0"]
   }
 }

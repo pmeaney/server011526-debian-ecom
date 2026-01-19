@@ -9,6 +9,7 @@ It has evolved from my past TF project "server020325-debianNpm".
 - For descriptive startup instructions with clarifying commentary: ./docs/initial-setup/setup-workflow-with-clarifications.md
 - For quick, concise startup if you're already familiar with the project or its concepts: ./docs/initial-setup/setup-workflow-quick-and-concise.md
 - If you're returning to the project after initial setup and, for example, need to reload env vars into your terminal session: ./docs/env-reload.md
+- After the server is created with `terraform apply`, run through the verification steps in the doc ./docs/post-setup-verifications.md to ensure things were setup correctly
 
 ## Security Notes
 

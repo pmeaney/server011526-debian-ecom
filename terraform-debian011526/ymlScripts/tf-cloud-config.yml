@@ -36,13 +36,108 @@ packages:
   - git
   - make
   - rsync
+  - ufw
+  - fail2ban
+
+write_files:
+  # Create kernel hardening configuration file
+  # This file configures low-level network security settings that are applied at boot
+  # These settings protect against DDoS attacks, IP spoofing, and packet manipulation
+  # Location: /etc/sysctl.d/ is the standard directory for kernel parameter overrides
+  # The "99-" prefix ensures this loads last, overriding any earlier configs
+  - path: /etc/sysctl.d/99-hardening.conf
+    permissions: '0644'  # Readable by all, writable only by root
+    content: |
+      # Kernel hardening for DigitalOcean droplet
+      
+      # CRITICAL: SYN flood protection (protects against DDoS)
+      # Enables SYN cookies to prevent attackers from exhausting connection queue
+      # When connection queue fills, kernel uses stateless cookies instead of allocating memory
+      # Transparent to legitimate clients, stops SYN flood attacks cold
+      net.ipv4.tcp_syncookies = 1
+      
+      # IMPORTANT: IP spoofing protection
+      # Reverse path filtering checks if packets could plausibly arrive on their interface
+      # Drops packets claiming to be from IPs that wouldn't route back this way
+      # Blocks spoofed private IPs, localhost, and other impossible source addresses
+      net.ipv4.conf.all.rp_filter = 1
+      net.ipv4.conf.default.rp_filter = 1
+      
+      # USEFUL: Log suspicious packets for monitoring
+      # "Martian" packets have impossible source/dest addresses (private IPs on public interface, etc.)
+      # Logging creates audit trail of attack attempts without blocking (rp_filter already blocks them)
+      net.ipv4.conf.all.log_martians = 1
+      
+      # DEFENSE IN DEPTH: Disable features not needed in cloud environment
+      # These features are rarely used legitimately in modern cloud setups
+      # Disabling eliminates potential attack vectors at zero performance cost
+      
+      # ICMP redirects: Routers can tell us to use different routes
+      # Not needed with simple single-interface, single-gateway topology
+      # Can be abused for man-in-the-middle attacks, so disable
+      net.ipv4.conf.all.accept_redirects = 0
+      net.ipv4.conf.default.accept_redirects = 0
+      net.ipv6.conf.all.accept_redirects = 0
+      net.ipv6.conf.default.accept_redirects = 0
+      net.ipv4.conf.all.send_redirects = 0
+      
+      # Source routing: Sender specifies exact path through network
+      # Almost never used legitimately, can bypass firewalls
+      net.ipv4.conf.all.accept_source_route = 0
+      net.ipv4.conf.default.accept_source_route = 0
+      net.ipv6.conf.all.accept_source_route = 0
+      net.ipv6.conf.default.accept_source_route = 0
 
 runcmd:
   # Update package lists before installing anything
-  - sudo apt-get update
+  - apt-get update
+
   # Install Docker using the official script
   - curl -fsSL https://get.docker.com -o get-docker.sh
   - sh get-docker.sh
-  - sudo usermod -aG docker ${LINUX_HUMAN_USERNAME}
+  - usermod -aG docker ${LINUX_HUMAN_USERNAME}
+
   # Install rsync with error handling
-  - sudo apt-get install -y rsync || echo "Failed to install rsync"
+  - apt-get install -y rsync || echo "Failed to install rsync"
+
+  # Configure UFW firewall
+  - ufw default deny incoming
+  - ufw default allow outgoing
+  - ufw allow 22/tcp
+  - ufw allow 80/tcp
+  - ufw allow 443/tcp
+  - ufw --force enable
+  
+  # Log UFW status for verification
+  - ufw status verbose
+
+  # Configure and enable fail2ban
+  # Copy the default jail config to the local config file where we'll make our changes
+  - cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
+  
+  # Enable the SSH jail and configure it
+  # The 'enabled = true' line activates monitoring for SSH
+  # 'maxretry = 3' means ban after 3 failed attempts
+  # 'bantime = 600' means ban for 600 seconds (10 minutes)
+  # 'findtime = 600' means 3 failures within 10 minutes triggers the ban
+  - |
+    cat >> /etc/fail2ban/jail.local << 'EOF'
+    
+    [sshd]
+    enabled = true
+    port = ssh
+    filter = sshd
+    logpath = /var/log/auth.log
+    maxretry = 3
+    bantime = 600
+    findtime = 600
+    EOF
+  
+  # Start and enable fail2ban service
+  - systemctl enable fail2ban
+  - systemctl start fail2ban
+
+  # Apply kernel hardening settings from the config file we created above
+  # The -p flag loads settings from the specified file
+  # Settings take effect immediately and persist across reboots (because file is in /etc/sysctl.d/)
+  - sysctl -p /etc/sysctl.d/99-hardening.conf
