@@ -1,0 +1,48 @@
+#cloud-config
+groups:
+  - debian: [root, sys]
+
+users:
+  - default
+  - name: ${LINUX_HUMAN_USERNAME}
+    gecos: Human Developer User - ${LINUX_HUMAN_USERNAME}
+    shell: /bin/bash
+    primary_group: ${LINUX_HUMAN_USERNAME}
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    groups: users, admin, docker
+    lock_passwd: true
+    ssh_authorized_keys: ${LINUX_HUMAN_SSHKEY}
+
+  - name: ${LINUX_BOTCICDGHA_USERNAME}
+    gecos: GitHub Actions CI/CD Bot - ${LINUX_BOTCICDGHA_USERNAME}
+    shell: /bin/bash
+    primary_group: ${LINUX_BOTCICDGHA_USERNAME}
+    # gives passwordless sudo access specifically to docker and docker-compose commands
+    sudo: ALL=(ALL) NOPASSWD:/usr/bin/docker,/usr/bin/docker-compose
+    groups: docker
+    lock_passwd: true
+    ssh_authorized_keys: ${LINUX_CICDGHA_SSHKEY}
+
+# Removed chpasswd section that used LINUX_HUMAN_USERPASS
+# We can keep this simple since its just a portfolio / blog at the moment.
+
+# Disable SSH password authentication
+ssh_pwauth: false
+
+package_update: true
+package_upgrade: true
+packages:
+  - zsh
+  - git
+  - make
+  - rsync
+
+runcmd:
+  # Update package lists before installing anything
+  - sudo apt-get update
+  # Install Docker using the official script
+  - curl -fsSL https://get.docker.com -o get-docker.sh
+  - sh get-docker.sh
+  - sudo usermod -aG docker ${LINUX_HUMAN_USERNAME}
+  # Install rsync with error handling
+  - sudo apt-get install -y rsync || echo "Failed to install rsync"

@@ -4,6 +4,12 @@ This is a Terraform project for my Debian-based ecommerce project, started appro
 
 It has evolved from my past TF project "server020325-debianNpm". 
 
+## Getting started:
+
+- For descriptive startup instructions with clarifying commentary: ./docs/initial-setup/setup-workflow-with-clarifications.md
+- For quick, concise startup if you're already familiar with the project or its concepts: ./docs/initial-setup/setup-workflow-quick-and-concise.md
+- If you're returning to the project after initial setup and, for example, need to reload env vars into your terminal session: ./docs/env-reload.md
+
 ## Security Notes
 
 This repository contains infrastructure-as-code for a linux server hosting a small business e-commerce marketplace. All sensitive information (tokens, keys, passwords, IP addresses) is managed via 1Password and environment variables - nothing sensitive is committed to this repository.
