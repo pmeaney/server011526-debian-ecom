@@ -63,6 +63,8 @@ Note:
 
 - Somtimes NPM can be finnicky, especially after it starts up, or after you try to re-create certs with the same domain, but on a new server. Try again if there's an internal error with npm during its automatic lets encrypt cert attempts.
 
+**NOTE: The below table is just an example. It's from a past project.**
+
 | Purpose        | Domain Name          | Forward Hostname / IP | Forward Port | Description                                             |
 | -------------- | -------------------- | --------------------- | ------------ | ------------------------------------------------------- |
 | Base Domain    | myDomainName.com     | 172.17.0.1            | 3000         | Main NextJS application running on Docker network       |
@@ -77,6 +79,8 @@ On the SSL Certificate Tab of "New Proxy Host",
 - switch "I agree to the Lets Encrypt Terms of Service" to on.
 - Click save.
 - If it fails, try again.
+
+## Experimental -- below examples might not work. I recommend manual setup for now.
 
 OR
 
