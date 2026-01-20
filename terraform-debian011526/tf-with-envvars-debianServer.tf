@@ -47,6 +47,16 @@ locals {
     toronto       = "tor1"
     india         = "blr1"
   }
+  
+  # FIXED: Use templatefile() directly in locals instead of data.template_file
+  user_data = templatefile("${path.module}/tf-cloud-config.yml", {
+    # For dev login
+    LINUX_HUMAN_USERNAME      = var.LINUX_HUMAN_USERNAME
+    LINUX_HUMAN_SSHKEY        = var.LINUX_HUMAN_SSHKEY
+    # For Github Actions ("GHA") CICD bot to log in
+    LINUX_BOTCICDGHA_USERNAME = var.LINUX_BOTCICDGHA_USERNAME
+    LINUX_CICDGHA_SSHKEY      = var.LINUX_CICDGHA_SSHKEY
+  })
 }
 
 provider "digitalocean" {}
@@ -102,26 +112,13 @@ variable "SERVER_TAG_DEPLOY_COLOR" {
   default = "default-color-tag"
 }
 
-data "template_file" "my_example_user_data" {
-  template = templatefile("./ymlScripts/tf-cloud-config.yml",
-    {
-      # For dev login
-      LINUX_HUMAN_USERNAME = "${var.LINUX_HUMAN_USERNAME}",
-      # LINUX_HUMAN_USERPASS = "${var.LINUX_HUMAN_USERPASS}"
-      LINUX_HUMAN_SSHKEY = "${var.LINUX_HUMAN_SSHKEY}",
-      # For Github Actions ("GHA") CICD bot to log in.  no pass item b/c the ssh key has no pass-- the ssh key is only for cicd bot
-      LINUX_BOTCICDGHA_USERNAME = "${var.LINUX_BOTCICDGHA_USERNAME}",
-      LINUX_CICDGHA_SSHKEY = "${var.LINUX_CICDGHA_SSHKEY}",
-    })
-}
-
 resource "digitalocean_droplet" "droplet" {
   image     = "debian-12-x64"
-  name      = "${var.LINUX_SERVER_NAME}"
+  name      = var.LINUX_SERVER_NAME
   region    = local.regions.san_francisco
   size      = local.sizes.small
-  tags      = ["${var.SERVER_TAG_DEPLOY_COLOR}", "${var.SERVER_TAG_DATESTRING}"]
-  user_data = data.template_file.my_example_user_data.rendered
+  tags      = [var.SERVER_TAG_DEPLOY_COLOR, var.SERVER_TAG_DATESTRING]
+  user_data = local.user_data  # FIXED: Reference the local value instead of data source
 }
 
 output "ip_address" {
@@ -137,25 +134,25 @@ output "tf_apply_timestamp" {
   description = "Timestamp of apply"
 }
 output "LINUX_HUMAN_SSHKEY" {
-  value = "${var.LINUX_HUMAN_SSHKEY}"
+  value = var.LINUX_HUMAN_SSHKEY
 }
 output "LINUX_HUMAN_USERNAME" {
-  value = "${var.LINUX_HUMAN_USERNAME}"
+  value = var.LINUX_HUMAN_USERNAME
 }
 
 output "LINUX_CICDGHA_SSHKEY" {
-  value = "${var.LINUX_CICDGHA_SSHKEY}"
+  value = var.LINUX_CICDGHA_SSHKEY
 }
 output "LINUX_BOTCICDGHA_USERNAME" {
-  value = "${var.LINUX_BOTCICDGHA_USERNAME}"
+  value = var.LINUX_BOTCICDGHA_USERNAME
 }
 output "LINUX_SERVER_NAME" {
-  value = "${var.LINUX_SERVER_NAME}"
+  value = var.LINUX_SERVER_NAME
 }
 
 # If you want to make sure the yaml file was properly filled with env vars, you can uncomment this output statement and terraform will show the env vars in situ
 # output "template_file_contents" {
-#   value = data.template_file.my_example_user_data.rendered
+#   value = local.user_data
 # }
 
 variable "VAULT_1P" {
