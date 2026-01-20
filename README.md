@@ -4,6 +4,15 @@ This is a Terraform project for my Debian-based ecommerce project, started appro
 
 It has evolved from my past TF project "server020325-debianNpm". 
 
+## My To Do:
+
+- Run through post-setup verificaiton workflow
+- Get CloudFlare setup
+- Explore other aspects of security hardening in case I missed any good practices
+- Get Nginx Proxy Manager setup
+- Launch prototype app
+- Have fun
+
 ## Getting started:
 
 - For descriptive startup instructions with clarifying commentary: ./docs/initial-setup/setup-workflow-with-clarifications.md
