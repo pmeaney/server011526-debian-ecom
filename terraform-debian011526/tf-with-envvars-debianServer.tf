@@ -49,7 +49,7 @@ locals {
   }
   
   # FIXED: Use templatefile() directly in locals instead of data.template_file
-  user_data = templatefile("${path.module}/tf-cloud-config.yml", {
+  user_data = templatefile("${path.module}/ymlScripts/tf-cloud-config.yml", {
     # For dev login
     LINUX_HUMAN_USERNAME      = var.LINUX_HUMAN_USERNAME
     LINUX_HUMAN_SSHKEY        = var.LINUX_HUMAN_SSHKEY

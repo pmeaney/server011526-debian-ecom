@@ -1,0 +1,66 @@
+services:
+  nginx-proxy-mgr-011526:
+    image: "jc21/nginx-proxy-manager:latest"
+    container_name: nginx-proxy-mgr-011526
+    restart: unless-stopped
+    ports:
+      # These ports are in format <host-port>:<container-port>
+      - "80:80" # Public HTTP Port
+      - "443:443" # Public HTTPS Port
+      - "81:81" # Admin Web Port
+      # Add any other Stream port you want to expose
+      # - '21:21' # FTP
+    env_file:
+      - ./.env--nginx-proxy-mgr
+    # Leaving in these env vars for reference
+    # environment:
+    #   # Postgres parameters:
+    #   DB_POSTGRES_HOST: "postgres-for-nginx-proxy-mgr-011526"
+    #   DB_POSTGRES_PORT: "5432"
+    #   DB_POSTGRES_USER: "npm"
+    #   DB_POSTGRES_PASSWORD: "npmpass"
+    #   DB_POSTGRES_NAME: "npm"
+      # Uncomment this if IPv6 is not enabled on your host
+      # DISABLE_IPV6: 'true'
+    volumes:
+      # BIND MOUNT: Maps host directory ./data to container's /data
+      # Purpose: Stores NPM's application data, configuration files, and state
+      # Persists across container restarts/recreations
+      - ./data:/data
+      
+      # BIND MOUNT: Maps host directory ./letsencrypt to container's /etc/letsencrypt
+      # Purpose: Stores SSL/TLS certificates obtained from Let's Encrypt
+      # Critical for HTTPS - losing this means re-issuing all certificates
+      # Persists certificates across container restarts/recreations
+      - ./letsencrypt:/etc/letsencrypt
+    depends_on:
+      - postgres-for-nginx-proxy-mgr-011526
+    networks:
+      - main-network--npm011526
+
+  postgres-for-nginx-proxy-mgr-011526:
+    image: postgres:17
+    container_name: postgres-for-nginx-proxy-mgr-011526
+    env_file:
+      - ./.env--nginx-proxy-mgr
+    # Leaving in these env vars for reference
+    # environment:
+    #   POSTGRES_USER: "npm"
+    #   POSTGRES_PASSWORD: "npmpass"
+    #   POSTGRES_DB: "npm"
+    volumes:
+      # BIND MOUNT: Maps host directory ./postgres to container's /var/lib/postgresql/data
+      # Purpose: Stores PostgreSQL database files for NPM
+      # Contains all proxy configurations, user accounts, SSL certificate metadata, etc.
+      # This is the "source of truth" for NPM - losing this means losing all configurations
+      # Persists database across container restarts/recreations
+      - ./postgres:/var/lib/postgresql/data
+    networks:
+      - main-network--npm011526
+
+networks:
+  main-network--npm011526:
+    name: main-network--npm011526
+    # With external: true, Docker Compose expects the network to exist already and will fail if it doesn't
+    # Without external: true, Docker Compose will automatically create the network when you run docker-compose up
+    # And by default, Docker uses the bridge driver (which is Docker's default network type), so we don't need to specify it.

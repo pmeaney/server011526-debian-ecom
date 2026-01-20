@@ -7,9 +7,10 @@ terraform.tfstate.backup
 *.auto.tfvars
 
 # Environment variables
-.env
-.env.local
-*.env
+# .env
+# .env.local
+# *.env
+*.env--nginx-proxy-mgr
 
 # 1Password
 .op/
