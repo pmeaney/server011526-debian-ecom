@@ -530,22 +530,29 @@ sudo cat /etc/sysctl.d/99-hardening.conf
 **Why this matters:** These kernel-level settings provide protection that operates below the application layer. Even if an attacker bypasses application security, these kernel protections are still in place.
 
 ### Check for Martian Packet Logs (Attack Visibility)
-
 ```bash
-# Check if any suspicious packets have been logged
-sudo grep martian /var/log/syslog | tail -20
+# Check if any suspicious packets have been logged (Debian 12)
+sudo journalctl -k | grep martian | tail -20
+
+# Or check only today's logs
+sudo journalctl -k --since today | grep martian
+
+# Or check since last boot
+sudo journalctl -k --since boot | grep martian
 ```
+
+**Why `journalctl -k`?** The `-k` flag shows kernel messages, where martian packet logs appear. On Debian 12, kernel logs go to the systemd journal instead of `/var/log/syslog` (`/var/log/syslog` was used in older Debian (<11) and is being phased out of Ubuntu).
 
 **What you might see:** Log entries showing packets with spoofed source addresses that were blocked. This gives you visibility into attack attempts.
 
 **Example log entry:**
 ```
-Jan 19 14:23:45 server011526 kernel: martian source 192.168.1.1 from 203.0.113.45, on dev eth0
+Jan 21 14:23:45 server011526-debian-ecom kernel: martian source 192.168.1.1 from 203.0.113.45, on dev eth0
 ```
 
 This would indicate an attacker tried to send packets claiming to be from a private IP address (192.168.1.1) from a public internet address (203.0.113.45) - a clear spoofing attempt that was blocked.
 
-**If you don't see any martian logs yet:** This is normal for a fresh server. Spoofing attacks are less common than port scans. You'll likely see some within the first few weeks.
+**If you don't see any martian logs yet:** This is normal for a fresh server. Spoofing attacks are less common than port scans or SSH brute-force attempts. You'll likely see some within the first few weeks as your server's IP gets discovered by attackers.
 
 ---
 
@@ -628,7 +635,7 @@ sudo ss -tulpn | grep LISTEN | grep -E ":(22|80|443|3000|5432|8080)" | awk '{pri
 echo ""
 
 echo "10. Recent UFW blocks (last 5):"
-sudo grep UFW /var/log/syslog | tail -5
+sudo journalctl -k | grep UFW | tail -5
 echo ""
 
 echo "==================================="
@@ -723,8 +730,8 @@ After your initial verification, you should periodically check security status. 
 
 **Weekly:**
 - [ ] Check fail2ban banned IPs: `sudo fail2ban-client status sshd`
-- [ ] Review UFW blocked attempts: `sudo grep UFW /var/log/syslog | tail -50`
-- [ ] Check martian packet logs: `sudo grep martian /var/log/syslog | tail -20`
+- [ ] Review UFW blocked attempts: `sudo journalctl -k | grep UFW | tail -50`
+- [ ] Check martian packet logs: `sudo journalctl -k | grep martian | tail -20`
 - [ ] Check for available updates: `sudo apt-get update && sudo apt-get upgrade --dry-run`
 - [ ] Verify Docker containers are running: `docker ps`
 
