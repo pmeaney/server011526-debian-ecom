@@ -322,7 +322,7 @@ Should show Cloudflare nameservers.
 
 **"Certificate Invalid" in browser:**
 - Wait 5-10 minutes for Let's Encrypt to issue cert
-- Check NPM logs: `docker compose logs nginx-proxy-mgr-020325`
+- Check NPM logs: `docker compose logs nginx-proxy-mgr-011526`
 - Verify domain points to your server in Cloudflare DNS
 
 ### Site Not Loading

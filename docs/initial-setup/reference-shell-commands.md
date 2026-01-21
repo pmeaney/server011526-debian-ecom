@@ -861,13 +861,13 @@ Initial login credentials (change immediately).
 
 ### View NPM Container Logs
 ```bash
-docker compose logs -f nginx-proxy-mgr-020325
+docker compose logs -f nginx-proxy-mgr-011526
 ```
 Streams Nginx Proxy Manager logs.
 
 ### Restart NPM
 ```bash
-docker compose restart nginx-proxy-mgr-020325
+docker compose restart nginx-proxy-mgr-011526
 ```
 Restarts Nginx Proxy Manager service.
 
@@ -997,7 +997,7 @@ ssh deb
 
 # Start NPM
 cd nginxProxyMgr
-docker compose up -d && docker compose logs -f nginx-proxy-mgr-020325
+docker compose up -d && docker compose logs -f nginx-proxy-mgr-011526
 ```
 
 ### Complete SSH Key Setup (Human User)

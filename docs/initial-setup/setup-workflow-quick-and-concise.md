@@ -268,7 +268,7 @@ ssh deb
 
 # Start NPM
 cd nginxProxyMgr
-docker compose up -d && docker compose logs -f nginx-proxy-mgr-020325
+docker compose up -d && docker compose logs -f nginx-proxy-mgr-011526
 
 # Access NPM at http://YOUR_SERVER_IP:81
 # Default login: admin@example.com / changeme

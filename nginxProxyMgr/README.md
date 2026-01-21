@@ -36,7 +36,7 @@ ssh deb
 # This command is to Run in background, then check out logs.  It's a nice way to view the running container, while leaving it running after you exit the logs view.
 cd nginxProxyMgr && \
 docker compose -vvv -f docker-compose.yml up --build --remove-orphans -d && \
-docker compose logs -f nginx-proxy-mgr-020325
+docker compose logs -f nginx-proxy-mgr-011526
 ```
 
 ## Creating Proxy Hosts

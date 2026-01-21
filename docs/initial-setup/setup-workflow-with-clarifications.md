@@ -678,7 +678,7 @@ cd nginxProxyMgr
 docker compose up
 
 # OR start in background and follow logs (preferred after testing)
-docker compose up -d && docker compose logs -f nginx-proxy-mgr-020325
+docker compose up -d && docker compose logs -f nginx-proxy-mgr-011526
 ```
 
 **What to expect:**
@@ -713,7 +713,7 @@ Open browser to: `http://<your-server-ip>:81`
 docker ps
 
 # Check logs for errors
-docker compose logs nginx-proxy-mgr-020325
+docker compose logs nginx-proxy-mgr-011526
 
 # Ensure port 81 isn't blocked
 sudo ufw status
@@ -850,7 +850,7 @@ docker ps
 docker ps
 
 # 2. Check container logs for errors
-docker compose logs nginx-proxy-mgr-020325
+docker compose logs nginx-proxy-mgr-011526
 
 # 3. Ensure port 81 isn't blocked by firewall
 sudo ufw status
