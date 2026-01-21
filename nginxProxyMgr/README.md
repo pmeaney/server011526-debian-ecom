@@ -1,5 +1,47 @@
 ### Nginx Proxy Manager
 
+
+
+## Be aware!
+
+As of Jan 21, 2026, http access is prevented into the server.
+So, we'll need a work around for setting up npm via the browser.
+
+### Option 1: Temporarily Allow Port 81 (Quick Fix)
+
+```bash
+# SSH into your server
+ssh deb
+
+# Allow port 81
+sudo ufw allow 81/tcp
+
+# Verify
+sudo ufw status
+```
+Use this for: Initial NPM setup, testing
+
+### Option 2: SSH Tunnel (More Secure - Recommended)
+Instead of opening port 81 to the internet, create an SSH tunnel:
+```bash
+# From your laptop's CLI. This creates an SSH tunnel that forwards your laptop's 
+# port 8181 to the server's port 81
+ssh -L 8181:localhost:81 deb
+
+# Then access NPM in your browser at:
+# http://localhost:8181
+```
+
+**Why this is better:**
+
+- Port 81 stays closed to the internet
+- Only accessible through your SSH connection
+- No need to modify firewall rules
+- More secure (admin panel not exposed publicly)
+- Traffic is encrypted through the SSH tunnel
+ 
+
+## NPM Setup
 - Access NPM admin panel at `http://<server-ip>:81`
   - Default credentials:
     - Username: admin@example.com
