@@ -23,9 +23,6 @@ users:
     lock_passwd: true
     ssh_authorized_keys: ${LINUX_CICDGHA_SSHKEY}
 
-# Removed chpasswd section that used LINUX_HUMAN_USERPASS
-# We can keep this simple since its just a portfolio / blog at the moment.
-
 # Disable SSH password authentication
 ssh_pwauth: false
 
@@ -89,18 +86,15 @@ write_files:
       net.ipv6.conf.default.accept_source_route = 0
 
 runcmd:
-  # Update package lists before installing anything
-  - apt-get update
-
   # Install Docker using the official script
-  - curl -fsSL https://get.docker.com -o get-docker.sh
-  - sh get-docker.sh
+  - curl -fsSL https://get.docker.com -o /tmp/get-docker.sh
+  - sh /tmp/get-docker.sh
+  - rm /tmp/get-docker.sh
+  
+  # Add human user to docker group (for interactive sessions)
   - usermod -aG docker ${LINUX_HUMAN_USERNAME}
-
-  # Install rsync with error handling
-  - apt-get install -y rsync || echo "Failed to install rsync"
-
-  # Configure UFW firewall
+  
+  # Configure UFW firewall (Layer 2)
   - ufw default deny incoming
   - ufw default allow outgoing
   - ufw allow 22/tcp
@@ -110,13 +104,14 @@ runcmd:
   
   # Log UFW status for verification
   - ufw status verbose
-
-  # Configure and enable fail2ban
+  
+  # Configure fail2ban for Debian 12 (Layer 3)
   # Copy the default jail config to the local config file where we'll make our changes
   - cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
   
-  # Enable the SSH jail and configure it
+  # Enable the SSH jail and configure it for Debian 12 (uses systemd journal)
   # The 'enabled = true' line activates monitoring for SSH
+  # 'backend = systemd' tells fail2ban to read from journald instead of log files
   # 'maxretry = 3' means ban after 3 failed attempts
   # 'bantime = 600' means ban for 600 seconds (10 minutes)
   # 'findtime = 600' means 3 failures within 10 minutes triggers the ban
@@ -127,7 +122,7 @@ runcmd:
     enabled = true
     port = ssh
     filter = sshd
-    logpath = /var/log/auth.log
+    backend = systemd
     maxretry = 3
     bantime = 600
     findtime = 600
@@ -136,8 +131,8 @@ runcmd:
   # Start and enable fail2ban service
   - systemctl enable fail2ban
   - systemctl start fail2ban
-
-  # Apply kernel hardening settings from the config file we created above
+  
+  # Apply kernel hardening settings from the config file we created above (Layer 5)
   # The -p flag loads settings from the specified file
   # Settings take effect immediately and persist across reboots (because file is in /etc/sysctl.d/)
   - sysctl -p /etc/sysctl.d/99-hardening.conf
