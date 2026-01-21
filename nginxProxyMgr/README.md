@@ -43,7 +43,7 @@ ssh -L 8181:localhost:81 deb
 
 ## NPM Setup
 - Access NPM admin panel at `http://<server-ip>:81`
-  - Default credentials:
+  - Default credentials: (Maybe.  Most recently-- Jan 2026, I wasn't prompted for these instead it immediately asked me for name, email, desired pw)
     - Username: admin@example.com
     - Password: changeme
 
