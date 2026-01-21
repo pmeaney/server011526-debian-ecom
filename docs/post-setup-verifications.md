@@ -62,13 +62,7 @@ sudo cat /var/log/cloud-init-output.log | tail -50
 ```
 
 ---
-
-## 2. Verify User Configuration
-
-Cloud-init should have created two users: your human developer account and the GitHub Actions CICD bot account.
-
 ### Check User Existence
-
 ```bash
 # Verify both users exist
 id $USER
@@ -79,25 +73,28 @@ groups $USER
 groups ghaCICDBotUser
 ```
 
-**Expected output for human user:**
+**Expected output for human user (example):**
 ```
-uid=1001(patDevOpsUser) gid=1001(patDevOpsUser) groups=1001(patDevOpsUser),4(adm),27(sudo),999(docker)
+uid=1000(patDevOpsUser) gid=1003(patDevOpsUser) groups=1003(patDevOpsUser),100(users),1001(admin),1002(docker)
 ```
 
 **What to look for:**
-- User exists (doesn't say "no such user")
-- User is in `sudo` group (can run sudo commands)
+- User exists (shows UID and username)
+- User is in `admin` or `sudo` group (can run sudo commands - Debian uses `admin`, Ubuntu uses `sudo`)
 - User is in `docker` group (can run docker without sudo)
+- User is in `users` group (standard user group)
 
-**Expected output for CICD bot:**
+**Expected output for CICD bot (example):**
 ```
-uid=1002(ghaCICDBotUser) gid=1002(ghaCICDBotUser) groups=1002(ghaCICDBotUser),999(docker)
+uid=1001(ghaCICDBotUser) gid=1004(ghaCICDBotUser) groups=1004(ghaCICDBotUser),1002(docker)
 ```
 
 **What to look for:**
-- User exists
+- User exists (shows UID and username)
 - User is in `docker` group
-- User is NOT in `sudo` group (only has limited sudo access)
+- User is NOT in `admin` or `sudo` group (only has limited sudo access via sudoers config)
+
+**Note:** The specific UID and GID numbers don't matter - they're assigned dynamically by the system. What matters is that the users exist and have the correct group memberships.
 
 ### Verify SSH Key Authentication
 
@@ -200,7 +197,6 @@ sudo usermod -aG docker $USER
 UFW is your second layer of firewall defense (after DigitalOcean's cloud firewall). It should be enabled and configured to only allow ports 22, 80, and 443.
 
 ### Check UFW Status
-
 ```bash
 # View detailed UFW status
 sudo ufw status verbose
@@ -235,7 +231,6 @@ To                         Action      From
 ### Test UFW is Actually Blocking
 
 From your local machine (not SSH'd into the server), try to connect to a port that should be blocked:
-
 ```bash
 # From your laptop - this should timeout/fail
 telnet YOUR_SERVER_IP 3000
@@ -249,17 +244,29 @@ nc -zv YOUR_SERVER_IP 3000
 
 ### Check UFW Logs (Optional)
 
-UFW logs blocked packets to syslog. You can see what's being blocked:
-
+UFW logs blocked packets to the systemd journal (Debian 12 uses journalctl instead of traditional syslog files). You can see what's being blocked:
 ```bash
 # View recent UFW blocks
-sudo grep UFW /var/log/syslog | tail -20
+sudo journalctl -k | grep UFW | tail -20
 
 # Count blocks by port
-sudo grep UFW /var/log/syslog | grep -oP 'DPT=\K[0-9]+' | sort | uniq -c | sort -rn | head -10
+sudo journalctl -k | grep UFW | grep -oP 'DPT=\K[0-9]+' | sort | uniq -c | sort -rn | head -10
+
+# View UFW blocks from today only
+sudo journalctl -k --since today | grep UFW
+
+# Watch UFW blocks in real-time (Ctrl+C to stop)
+sudo journalctl -k -f | grep UFW
 ```
 
 **What you might see:** Lots of attempts on common ports that malware and botnets scan for (3000, 5432, 8080, etc.). This is normal internet background radiation.
+
+**If you see no output:** This is normal for a brand new server - you simply haven't been scanned or attacked yet. Give it a few hours or days, and you'll start seeing blocked connection attempts as bots discover your server's IP address and begin probing for vulnerabilities.
+
+**Understanding the commands:**
+- `journalctl -k` shows kernel messages (where UFW logs its blocks)
+- `-f` flag follows the log in real-time (like `tail -f`)
+- `--since today` filters to show only today's entries
 
 ---
 
