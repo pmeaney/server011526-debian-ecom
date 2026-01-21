@@ -16,7 +16,7 @@ I added container_names.
 #### RUN FROM LAPTOP, at project root folder -- To transfer files to server
 
 # If you setup your ssh config file via the 'generateTwoKeys' shells script--
-rsync -avvz ./nginxProxyMgr/ debblue:~/nginxProxyMgr
+rsync -avvz ./nginxProxyMgr/ deb:~/nginxProxyMgr
 # OR
 # Via ssh user:
 ITEM_1P="May 2025 Debian Server - 052225blue"
@@ -30,7 +30,7 @@ rsync -avvz ./nginxProxyMgr/ "${LINUX_HUMAN_USERNAME}"@"${LINUX_SERVER_IPADDRESS
 
 # ssh into the server...
 # ssh  "${LINUX_HUMAN_USERNAME}"@"${LINUX_SERVER_IPADDRESS}"
-ssh debblue
+ssh deb
 
 #### RUN FROM SERVER -- To start up the Nginx Proxy Manager docker container
 # This command is to Run in background, then check out logs.  It's a nice way to view the running container, while leaving it running after you exit the logs view.
