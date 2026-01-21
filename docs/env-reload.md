@@ -4,6 +4,15 @@ Use this when reloading your environment for the server011526-debian-ecom projec
 
 ---
 
+## Basic setup for just using terraform commands, after ssh, 1pass, etc. are already setup.
+
+```bash
+export VAULT_1P=Z_Tech_ClicksAndCodes
+export ITEM_1P="server011526-debian-ecom"
+export FIELD_1P_DO_TOKEN=DOToken_FA_011526
+export DIGITALOCEAN_ACCESS_TOKEN=$(op item get ${ITEM_1P} --vault ${VAULT_1P} --fields label=${FIELD_1P_DO_TOKEN} --reveal)
+```
+
 ## Quick Setup (Copy & Paste)
 
 ### Step 1: Set Configuration Variables

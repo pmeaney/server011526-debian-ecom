@@ -275,7 +275,6 @@ sudo journalctl -k -f | grep UFW
 Fail2ban monitors SSH authentication attempts and bans IPs that fail too many times. This is your primary defense against SSH brute-force attacks.
 
 ### Check Fail2ban Status
-
 ```bash
 # Verify fail2ban service is running
 sudo systemctl status fail2ban
@@ -287,8 +286,9 @@ sudo fail2ban-client status sshd
 **Expected output for service status:**
 ```
 ● fail2ban.service - Fail2Ban Service
-     Loaded: loaded (/lib/systemd/system/fail2ban.service; enabled)
+     Loaded: loaded (/lib/systemd/system/fail2ban.service; enabled; preset: enabled)
      Active: active (running) since [timestamp]
+       Docs: man:fail2ban(1)
 ```
 
 **Expected output for jail status:**
@@ -297,7 +297,7 @@ Status for the jail: sshd
 |- Filter
 |  |- Currently failed:	0
 |  |- Total failed:	0
-|  `- File list:	/var/log/auth.log
+|  `- Journal matches:	_SYSTEMD_UNIT=sshd.service + _COMM=sshd
 `- Actions
    |- Currently banned:	0
    |- Total banned:	0
@@ -306,13 +306,15 @@ Status for the jail: sshd
 
 **What to look for:**
 - Service is `active (running)`
-- SSH jail (sshd) is active and monitoring `/var/log/auth.log`
+- SSH jail (sshd) is active and monitoring the systemd journal
+- Line shows `Journal matches: _SYSTEMD_UNIT=sshd.service` (not a file path)
 - Shows counts of failed attempts and banned IPs
+
+**Why "Journal matches" instead of a log file?** Debian 12 uses systemd's journal for logging instead of traditional log files. Our fail2ban configuration uses `backend = systemd` to read SSH events directly from the journal (`journalctl`), which is more efficient and reliable than parsing text files.
 
 **Why these numbers might be zero:** If you just set up the server, no one has tried to attack it yet. Give it a few hours or days, and you'll start seeing failed attempts and bans as bots find your server.
 
 ### Check Fail2ban Configuration
-
 ```bash
 # Verify SSH jail configuration
 sudo fail2ban-client get sshd maxretry
@@ -328,6 +330,29 @@ sudo fail2ban-client get sshd findtime
 ```
 
 **What this means:** If someone fails SSH authentication 3 times within 10 minutes, their IP gets banned for 10 minutes. This effectively stops brute-force attacks while not permanently blocking legitimate users who make mistakes.
+
+### Verify Fail2ban Configuration File
+```bash
+# View the custom fail2ban configuration
+cat /etc/fail2ban/jail.d/sshd.local
+```
+
+**Expected output:**
+```ini
+[sshd]
+enabled = true
+backend = systemd
+maxretry = 3
+bantime = 600
+findtime = 600
+```
+
+**What this shows:**
+- `enabled = true` - SSH jail is active
+- `backend = systemd` - Reading from systemd journal (Debian 12 requirement)
+- Configuration values match what we verified above
+
+**Why we use `/etc/fail2ban/jail.d/sshd.local`:** This is the Debian 12 best practice. Files in the `jail.d/` directory override default settings without editing the main configuration files, preventing duplicate section errors and making maintenance easier.
 
 ### View Fail2ban Logs
 

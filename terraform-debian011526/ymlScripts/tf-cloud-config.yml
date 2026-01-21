@@ -43,7 +43,7 @@ write_files:
   # Location: /etc/sysctl.d/ is the standard directory for kernel parameter overrides
   # The "99-" prefix ensures this loads last, overriding any earlier configs
   - path: /etc/sysctl.d/99-hardening.conf
-    permissions: '0644'  # Readable by all, writable only by root
+    permissions: '0644'
     content: |
       # Kernel hardening for DigitalOcean droplet
       
@@ -85,6 +85,20 @@ write_files:
       net.ipv6.conf.all.accept_source_route = 0
       net.ipv6.conf.default.accept_source_route = 0
 
+  # Create fail2ban SSH jail configuration for Debian 12
+  # Using jail.d override instead of modifying jail.local to avoid duplicate sections
+  # Files in /etc/fail2ban/jail.d/ override settings in jail.conf and jail.local
+  # This is the Debian 12 best practice and prevents configuration conflicts
+  - path: /etc/fail2ban/jail.d/sshd.local
+    permissions: '0644'
+    content: |
+      [sshd]
+      enabled = true
+      backend = systemd
+      maxretry = 3
+      bantime = 600
+      findtime = 600
+
 runcmd:
   # Install Docker using the official script
   - curl -fsSL https://get.docker.com -o /tmp/get-docker.sh
@@ -105,30 +119,8 @@ runcmd:
   # Log UFW status for verification
   - ufw status verbose
   
-  # Configure fail2ban for Debian 12 (Layer 3)
-  # Copy the default jail config to the local config file where we'll make our changes
-  - cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
-  
-  # Enable the SSH jail and configure it for Debian 12 (uses systemd journal)
-  # The 'enabled = true' line activates monitoring for SSH
-  # 'backend = systemd' tells fail2ban to read from journald instead of log files
-  # 'maxretry = 3' means ban after 3 failed attempts
-  # 'bantime = 600' means ban for 600 seconds (10 minutes)
-  # 'findtime = 600' means 3 failures within 10 minutes triggers the ban
-  - |
-    cat >> /etc/fail2ban/jail.local << 'EOF'
-    
-    [sshd]
-    enabled = true
-    port = ssh
-    filter = sshd
-    backend = systemd
-    maxretry = 3
-    bantime = 600
-    findtime = 600
-    EOF
-  
-  # Start and enable fail2ban service
+  # Start and enable fail2ban service (Layer 3)
+  # Configuration is already in place via /etc/fail2ban/jail.d/sshd.local
   - systemctl enable fail2ban
   - systemctl start fail2ban
   
