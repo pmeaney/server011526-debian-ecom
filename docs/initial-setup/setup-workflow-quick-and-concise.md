@@ -261,7 +261,7 @@ exit
 
 Just in case, upload both users' public & private keys to 1password.  I like keeping a copy of all critical project setup info (usernames, password, ssh keys, api keys, etc.) in 1password.
 
-For example, when we go to deploy applications via Github CICD, we'll need to add the CICD Bot User's private key to the repo secrets.  Conveniently-- its ssh keys are already on the server, thanks to this terraform project-- via the cloud config yml file's user "LINUX_BOTCICDGHA_USERNAME" section.  So, when we're ready to start setting up deployment of an app, we just need to add the private key to the repo's secrets (the public & private key are both already on the remote server)
+For example, when we go to deploy applications via Github CICD, we'll need to add the CICD Bot User's private key to the repo secrets.  Conveniently-- its public ssh key is already on the server, thanks to this terraform project-- via the cloud config yml file's user "LINUX_BOTCICDGHA_USERNAME" section.  So, when we're ready to start setting up deployment of an app, we just need to add the private key to the repo's secrets (the public key is already on the remote server)
 
 ## Step 11: Deploy Nginx Proxy Manager
 
