@@ -42,7 +42,7 @@ export ITEM_1P="server011526-debian-ecom"
 
 # 1Password Field Names (created below in Step 1 - "Create Tokens in Browser")
 export FIELD_1P_DO_TOKEN=DOToken_FA_011526
-export FIELD_1P_GH_TOKEN=GHPATCICD_RpoWkflo_WRDpckgs_011526
+export FIELD_1P_GH_TOKEN=GHPATCICD_ForInitalServerSetup_011526
 
 # Linux User Configuration
 export LINUX_HUMAN_USERNAME=patDevOpsUser
@@ -82,7 +82,7 @@ op item create --category "Secure Note" \
 
 **GitHub Token:**
 1. GitHub → Settings → Developer Settings → Personal Access Tokens → Generate new token (classic)
-2. Name: Use the value of `$FIELD_1P_GH_TOKEN` from configuration section above (e.g., `GHPATCICD_RpoWkflo_WRDpckgs_011526`)
+2. Name: Use the value of `$FIELD_1P_GH_TOKEN` from configuration section above (e.g., `GHPATCICD_ForInitalServerSetup_011526`)
 3. Scopes: repo, workflow, write:packages, read:packages, delete:packages, read:org, admin:public_key
 4. Copy token immediately  and replace the FIELD_1P_GH_TOKEN's "GH_TOKEN_PLACEHOLDER" value with the token value
 
