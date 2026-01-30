@@ -106,7 +106,27 @@ On the SSL Certificate Tab of "New Proxy Host",
 - Click save.
 - If it fails, try again.
 
-## SSL Options enabled
+## Nginx Proxy Manager configuration
+
+### Proxy host setup
+
+Make one proxy host for each subdomain, i.e. yourWebsite.com , www.yourWebsite.com , shop.yourWebsite.com
+
+- Domain Names (make one entry per subdomain)
+  - yourWebsite.com - Your public domain
+
+- Scheme: http ✓ (internal Docker network communication)
+- Forward Hostname: dockerContainer name or Docker network alias
+- Forward Port: e.g. 3000, 3001 are common for nodejs apps
+
+- Access List
+  - Publicly Accessible ✓ (correct for public storefront)
+  
+- Options Review:
+  - Cache Assets ❌ (Disabled):  Nginx can cache static assets (images, CSS, JS). Leave OFF for now - Next.js handles its own caching. You can enable later if needed.
+  - Block Common Exploits ✅ (Enabled): Blocks common attack patterns (SQL injection attempts, directory traversal, etc.). Keep it ON for security.
+
+### SSL Options enabled
 
 - Force SSL ✅
   - Automatically redirects all HTTP (port 80) traffic to HTTPS (port 443). Users typing http://yoursite.com get redirected to https://yoursite.com. Essential for security.
