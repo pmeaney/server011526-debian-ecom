@@ -135,6 +135,9 @@ Make one proxy host for each subdomain, i.e. yourWebsite.com , www.yourWebsite.c
 - HSTS Enabled ✅
   - HTTP Strict Transport Security tells browsers "always use HTTPS for this site." After first visit, browser won't even attempt HTTP connections. Security best practice.
 
+**Lastly-- don't forget to connect the nginx proxy manager container your project's docker network!**
+
+`docker network connect your-projects-network nginx-proxy-mgr-011526`
 
 ## Experimental -- below examples might not work. I recommend manual setup for now.
 
