@@ -1,31 +1,15 @@
 ### Nginx Proxy Manager
 
 
-
 ## Be aware!
 
-As of Jan 21, 2026, http access is prevented into the server.
-So, we'll need a work around for setting up npm via the browser.
-
-### Option 1: Temporarily Allow Port 81 (Quick Fix)
-
-```bash
-# SSH into your server
-ssh deb
-
-# Allow port 81
-sudo ufw allow 81/tcp
-
-# Verify
-sudo ufw status
-```
-Use this for: Initial NPM setup, testing
+http access is prevented into the server.
 
 ### Option 2: SSH Tunnel (More Secure - Recommended)
 Instead of opening port 81 to the internet, create an SSH tunnel:
 ```bash
 # From your laptop's CLI. This creates an SSH tunnel that forwards your laptop's 
-# port 8181 to the server's port 81
+# port 8181 to the server's port 81.  "deb" is an ssh config user already setup.  alternatively, use `username:ip`
 ssh -L 8181:localhost:81 deb
 
 # Then access NPM in your browser at:
@@ -121,6 +105,16 @@ On the SSL Certificate Tab of "New Proxy Host",
 - switch "I agree to the Lets Encrypt Terms of Service" to on.
 - Click save.
 - If it fails, try again.
+
+## SSL Options enabled
+
+- Force SSL ✅
+  - Automatically redirects all HTTP (port 80) traffic to HTTPS (port 443). Users typing http://yoursite.com get redirected to https://yoursite.com. Essential for security.
+- HTTP/2 Support ✅
+  - Enables HTTP/2 protocol which is faster than HTTP/1.1. Benefits: multiplexing, server push, header compression. Modern browsers support it. Recommended - better performance.
+- HSTS Enabled ✅
+  - HTTP Strict Transport Security tells browsers "always use HTTPS for this site." After first visit, browser won't even attempt HTTP connections. Security best practice.
+
 
 ## Experimental -- below examples might not work. I recommend manual setup for now.
 
